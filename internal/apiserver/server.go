@@ -62,6 +62,7 @@ func (s *server) confirureLogger(loglevel string) error {
 	return nil
 }
 
+//Вызывается при логине. Создается пара токенов AccessToken, RefreshToken
 func (s *server) handleSessionsCreate() http.HandlerFunc {
 
 	type request struct {
@@ -95,6 +96,7 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 
 }
 
+//Вызывается при создании пользователя
 func (s *server) handleUsersCreate() http.HandlerFunc {
 	type request struct {
 		ID       int    `json:"id"`

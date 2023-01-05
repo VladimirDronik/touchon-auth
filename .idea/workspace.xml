@@ -5,14 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="47360acd-5d4a-4de1-9b22-ae6a4bf24a3f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/configs/touchon-login.toml" beforeDir="false" afterPath="$PROJECT_DIR$/bin/configs/touchon-login.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/apiserver/apiserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/apiserver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/apiserver/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/config.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/internal/apiserver/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/server.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/store/repository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/store/repository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/store/sqlstore/userrepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/store/sqlstore/userrepository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/model/jwt.go" beforeDir="false" afterPath="$PROJECT_DIR$/model/jwt.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
