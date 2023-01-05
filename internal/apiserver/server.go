@@ -14,6 +14,7 @@ import (
 
 var (
 	errIncorrectLoginOrPassword = errors.New("Incorrect login or password")
+	errRefreshTokenInvalid      = errors.New("refresh token invalid")
 )
 
 type server struct {
@@ -29,6 +30,7 @@ func newServer(store store.Store, config *Config) *server {
 		router: mux.NewRouter(),
 		logger: logrus.New(),
 		store:  store,
+		config: *config,
 	}
 
 	s.configeureRouter()
@@ -46,6 +48,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *server) configeureRouter() {
 	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/login", s.handleSessionsCreate()).Methods("POST")
+	s.router.HandleFunc("/refresh_token", s.handleRefreshToken()).Methods("POST")
 }
 
 func (s *server) confirureLogger(loglevel string) error {
@@ -57,6 +60,42 @@ func (s *server) confirureLogger(loglevel string) error {
 
 	s.logger.SetLevel(level)
 	return nil
+}
+
+// Вызывается когда нужно сгенерить новую пару токенов, при протуханни  AccessToken
+func (s *server) handleRefreshToken() http.HandlerFunc {
+
+	var tokens model.Tokens
+
+	type request struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		user, err := s.store.User().GetUserByToken(req.RefreshToken)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, errRefreshTokenInvalid)
+			return
+		}
+
+		token.New(s.config.Secret)
+		accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		tokens.AccessToken, err = s.token.NewJWT(user.ID, accessTokenTTL)
+		tokens.RefreshToken = req.RefreshToken
+
+		s.respond(w, r, http.StatusOK, tokens)
+	}
 }
 
 func (s *server) handleSessionsCreate() http.HandlerFunc {
@@ -81,7 +120,7 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 			return
 		}
 
-		tokens, err := s.createSession(req.ID)
+		tokens, err := s.createSession(user.ID)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
@@ -136,8 +175,17 @@ func (s *server) createSession(userId int) (model.Tokens, error) {
 		return res, err
 	}
 
+	refreshTokenTTL, err := time.ParseDuration(s.config.RefreshTokenTTL)
+	if err != nil {
+		return res, err
+	}
+
 	res.AccessToken, err = s.token.NewJWT(userId, accessTokenTTL)
 	res.RefreshToken, err = s.token.NewRefreshToken()
+
+	if err := s.store.User().AddRefreshToken(userId, res.RefreshToken, refreshTokenTTL); err != nil {
+		return res, err
+	}
 
 	return res, err
 }

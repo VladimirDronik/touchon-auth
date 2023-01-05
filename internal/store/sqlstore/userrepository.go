@@ -2,6 +2,7 @@ package sqlstore
 
 import (
 	"errors"
+	"time"
 	"touchon-auth/model"
 )
 
@@ -78,6 +79,33 @@ func (r *UserRepository) GetUserByLoginOrEmail(login string, email string) (*mod
 		email, login).Scan(
 		&user.ID,
 		&user.EncryptedPassword,
+	); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+//Сохраняем RefreshToken в БД для указанного юзера и задаем ему срок службы
+func (r *UserRepository) AddRefreshToken(userId int, refreshToken string, RefreshTokenTTL time.Duration) error {
+
+	ttl := time.Now().Add(RefreshTokenTTL)
+
+	if err := r.store.db.QueryRow("UPDATE users SET refresh_token = ?, token_expired = ? WHERE id = ?",
+		refreshToken, ttl, userId).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// Получаем юзера по его токену, одновременно проверяя не истек ли он
+func (r *UserRepository) GetUserByToken(token string) (*model.User, error) {
+
+	user := &model.User{}
+	if err := r.store.db.QueryRow(
+		"SELECT id FROM users WHERE refresh_token = ? AND token_expired > ?",
+		token, time.Now()).Scan(
+		&user.ID,
 	); err != nil {
 		return nil, err
 	}

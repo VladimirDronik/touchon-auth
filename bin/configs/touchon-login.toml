@@ -1,6 +1,11 @@
+#main
 bind_addr = ":8090"
 log_level = "debug"
+
+#database
 database_url = "root:Alli80ed!@tcp(127.0.0.1:3306)/touchon_users"
+
+#token
 secret = "Alli80ed!"
-accessTokenTTL = "120m"
+accessTokenTTL = "15m"
 refreshTokenTTl = "43200m"
