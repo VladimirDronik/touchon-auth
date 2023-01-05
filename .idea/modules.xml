@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/TouchOnHeat.iml" filepath="$PROJECT_DIR$/.idea/TouchOnHeat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/touchon-auth.iml" filepath="$PROJECT_DIR$/.idea/touchon-auth.iml" />
     </modules>
   </component>
 </project>
