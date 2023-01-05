@@ -62,42 +62,6 @@ func (s *server) confirureLogger(loglevel string) error {
 	return nil
 }
 
-// Вызывается когда нужно сгенерить новую пару токенов, при протуханни  AccessToken
-func (s *server) handleRefreshToken() http.HandlerFunc {
-
-	var tokens model.Tokens
-
-	type request struct {
-		RefreshToken string `json:"refresh_token"`
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		req := &request{}
-		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
-			return
-		}
-
-		user, err := s.store.User().GetUserByToken(req.RefreshToken)
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, errRefreshTokenInvalid)
-			return
-		}
-
-		token.New(s.config.Secret)
-		accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
-		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
-			return
-		}
-
-		tokens.AccessToken, err = s.token.NewJWT(user.ID, accessTokenTTL)
-		tokens.RefreshToken = req.RefreshToken
-
-		s.respond(w, r, http.StatusOK, tokens)
-	}
-}
-
 func (s *server) handleSessionsCreate() http.HandlerFunc {
 
 	type request struct {
@@ -188,6 +152,42 @@ func (s *server) createSession(userId int) (model.Tokens, error) {
 	}
 
 	return res, err
+}
+
+// Вызывается когда нужно сгенерить новую пару токенов, при протуханни  AccessToken
+func (s *server) handleRefreshToken() http.HandlerFunc {
+
+	var tokens model.Tokens
+
+	type request struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		user, err := s.store.User().GetUserByToken(req.RefreshToken)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, errRefreshTokenInvalid)
+			return
+		}
+
+		token.New(s.config.Secret)
+		accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
+		if err != nil {
+			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		tokens.AccessToken, err = s.token.NewJWT(user.ID, accessTokenTTL)
+		tokens.RefreshToken = req.RefreshToken
+
+		s.respond(w, r, http.StatusOK, tokens)
+	}
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
