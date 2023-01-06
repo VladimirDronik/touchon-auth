@@ -12,7 +12,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "configs-path", "configs/touchon-login.toml", "path to configs file")
+	flag.StringVar(&configPath, "configs-path", "configs/touchon_auth.toml", "path to configs file")
 }
 
 func main() {

@@ -1,7 +1,7 @@
 .PHONY: build
 
 build:
-	cd services/apiserver/cmd && go build -o ../../../bin/apiserver
+	cd cmd && go build -o ../../../bin/touchon_auth
 
 .PHONY: test
 test:
