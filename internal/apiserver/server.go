@@ -22,7 +22,6 @@ type server struct {
 	logger *logrus.Logger
 	store  store.Store
 	config Config
-	token  token.Token
 }
 
 func newServer(store store.Store, config *Config) *server {
@@ -46,9 +45,9 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) configeureRouter() {
-	s.router.HandleFunc("/users", s.handleUsersCreate()).Methods("POST")
+	s.router.HandleFunc("/users/create", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/login", s.handleSessionsCreate()).Methods("POST")
-	s.router.HandleFunc("/refresh_token", s.handleRefreshToken()).Methods("POST")
+	s.router.HandleFunc("/users/refresh_token", s.handleRefreshToken()).Methods("POST")
 }
 
 func (s *server) confirureLogger(loglevel string) error {
@@ -134,7 +133,7 @@ func (s *server) createSession(userId int) (model.Tokens, error) {
 		err    error
 	)
 
-	token.New(s.config.Secret)
+	tokenJWT := token.New(s.config.Secret)
 
 	accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
 	if err != nil {
@@ -146,8 +145,8 @@ func (s *server) createSession(userId int) (model.Tokens, error) {
 		return tokens, err
 	}
 
-	tokens.AccessToken, err = s.token.NewJWT(userId, accessTokenTTL)
-	tokens.RefreshToken, err = s.token.NewRefreshToken()
+	tokens.AccessToken, err = tokenJWT.NewJWT(userId, accessTokenTTL)
+	tokens.RefreshToken, err = tokenJWT.NewRefreshToken()
 
 	if err := s.store.User().AddRefreshToken(userId, tokens.RefreshToken, refreshTokenTTL); err != nil {
 		return tokens, err
@@ -178,15 +177,15 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 			return
 		}
 
-		token.New(s.config.Secret)
+		tokenJWT := token.New(s.config.Secret)
 		accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
-		tokens.AccessToken, err = s.token.NewJWT(user.ID, accessTokenTTL)
-		tokens.RefreshToken, err = s.token.NewRefreshToken()
+		tokens.AccessToken, err = tokenJWT.NewJWT(user.ID, accessTokenTTL)
+		tokens.RefreshToken, err = tokenJWT.NewRefreshToken()
 
 		s.respond(w, r, http.StatusOK, tokens)
 	}

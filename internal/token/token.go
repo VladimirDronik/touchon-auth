@@ -25,7 +25,11 @@ func (t Token) NewJWT(userId int, ttl time.Duration) (string, error) {
 		Subject:   strconv.Itoa(userId),
 	})
 
-	return token.SignedString([]byte(t.signingKey))
+	tokenString, err := token.SignedString([]byte(t.signingKey))
+	if err != nil {
+		println(err)
+	}
+	return tokenString, nil
 }
 
 func (t Token) NewRefreshToken() (string, error) {
