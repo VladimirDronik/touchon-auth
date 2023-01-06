@@ -2,7 +2,7 @@ package sqlstore
 
 import (
 	"database/sql"
-	"touchon-auth/internal/store"
+	"touchon_auth/internal/store"
 )
 
 type Store struct {

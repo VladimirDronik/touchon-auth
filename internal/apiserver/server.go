@@ -7,9 +7,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
-	"touchon-auth/internal/store"
-	"touchon-auth/internal/token"
-	"touchon-auth/model"
+	"touchon_auth/internal/store"
+	"touchon_auth/internal/token"
+	"touchon_auth/model"
 )
 
 var (

@@ -2,7 +2,7 @@ package store
 
 import (
 	"time"
-	"touchon-auth/model"
+	"touchon_auth/model"
 )
 
 type UserRepository interface {

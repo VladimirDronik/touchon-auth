@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/BurntSushi/toml"
 	"log"
-	"touchon-auth/internal/apiserver"
+	"touchon_auth/internal/apiserver"
 )
 
 var (

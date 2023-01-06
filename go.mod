@@ -1,4 +1,4 @@
-module touchon-auth
+module touchon_auth
 
 go 1.18
 

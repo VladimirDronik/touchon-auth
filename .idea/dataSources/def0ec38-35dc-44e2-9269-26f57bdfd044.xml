@@ -1178,9 +1178,8 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Primary>1</Primary>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
-    <column id="315" parent="302" name="id">
-      <AutoIncrement>20</AutoIncrement>
-      <DataType>int|0s</DataType>
+    <column id="315" parent="302" name="uuid">
+      <DataType>varchar(36)|0s</DataType>
       <NotNull>1</NotNull>
       <Position>1</Position>
     </column>
@@ -1213,7 +1212,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
       <Position>7</Position>
     </column>
     <index id="322" parent="302" name="PRIMARY">
-      <ColNames>id</ColNames>
+      <ColNames>uuid</ColNames>
       <Type>btree</Type>
       <Unique>1</Unique>
     </index>

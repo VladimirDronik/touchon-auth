@@ -3,7 +3,7 @@ package sqlstore
 import (
 	"errors"
 	"time"
-	"touchon-auth/model"
+	"touchon_auth/model"
 )
 
 type UserRepository struct {

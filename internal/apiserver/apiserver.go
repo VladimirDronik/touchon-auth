@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
-	"touchon-auth/internal/store/sqlstore"
+	"touchon_auth/internal/store/sqlstore"
 )
 
 // Запуск сервера
