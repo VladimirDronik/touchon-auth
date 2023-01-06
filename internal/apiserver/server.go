@@ -130,30 +130,30 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 
 func (s *server) createSession(userId int) (model.Tokens, error) {
 	var (
-		res model.Tokens
-		err error
+		tokens model.Tokens
+		err    error
 	)
 
 	token.New(s.config.Secret)
 
 	accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
 	if err != nil {
-		return res, err
+		return tokens, err
 	}
 
 	refreshTokenTTL, err := time.ParseDuration(s.config.RefreshTokenTTL)
 	if err != nil {
-		return res, err
+		return tokens, err
 	}
 
-	res.AccessToken, err = s.token.NewJWT(userId, accessTokenTTL)
-	res.RefreshToken, err = s.token.NewRefreshToken()
+	tokens.AccessToken, err = s.token.NewJWT(userId, accessTokenTTL)
+	tokens.RefreshToken, err = s.token.NewRefreshToken()
 
-	if err := s.store.User().AddRefreshToken(userId, res.RefreshToken, refreshTokenTTL); err != nil {
-		return res, err
+	if err := s.store.User().AddRefreshToken(userId, tokens.RefreshToken, refreshTokenTTL); err != nil {
+		return tokens, err
 	}
 
-	return res, err
+	return tokens, err
 }
 
 // Вызывается когда нужно сгенерить новую пару токенов, при протуханни  AccessToken
@@ -186,7 +186,7 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 		}
 
 		tokens.AccessToken, err = s.token.NewJWT(user.ID, accessTokenTTL)
-		tokens.RefreshToken = req.RefreshToken
+		tokens.RefreshToken, err = s.token.NewRefreshToken()
 
 		s.respond(w, r, http.StatusOK, tokens)
 	}
