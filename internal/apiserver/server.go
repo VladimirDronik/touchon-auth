@@ -3,6 +3,7 @@ package apiserver
 import (
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -45,6 +46,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) configeureRouter() {
+	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	s.router.HandleFunc("/users/create", s.handleUsersCreate()).Methods("POST")
 	s.router.HandleFunc("/login", s.handleSessionsCreate()).Methods("POST")
 	s.router.HandleFunc("/users/refresh_token", s.handleRefreshToken()).Methods("POST")
@@ -90,11 +92,7 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 			return
 		}
 
-		cookie := http.Cookie{}
-		cookie.Name = "refreshToken"
-		cookie.Value = tokens.RefreshToken
-		http.SetCookie(w, &cookie)
-
+		s.setCookie(w, "refreshToken", tokens.RefreshToken)
 		s.respond(w, r, http.StatusOK, tokens)
 	}
 
@@ -163,8 +161,6 @@ func (s *server) createSession(userId int) (model.Tokens, error) {
 // Вызывается когда нужно сгенерить новую пару токенов, при протуханни  AccessToken
 func (s *server) handleRefreshToken() http.HandlerFunc {
 
-	var tokens model.Tokens
-
 	type request struct {
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -182,16 +178,13 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 			return
 		}
 
-		tokenJWT := token.New(s.config.Secret)
-		accessTokenTTL, err := time.ParseDuration(s.config.AccessTokenTTL)
+		tokens, err := s.createSession(user.ID)
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
-		tokens.AccessToken, err = tokenJWT.NewJWT(user.ID, accessTokenTTL)
-		tokens.RefreshToken, err = tokenJWT.NewRefreshToken()
-
+		s.setCookie(w, "refreshToken", tokens.RefreshToken)
 		s.respond(w, r, http.StatusOK, tokens)
 	}
 }
@@ -205,4 +198,12 @@ func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data 
 	if data != nil {
 		json.NewEncoder(w).Encode(data)
 	}
+}
+
+func (s *server) setCookie(w http.ResponseWriter, name string, value string) {
+
+	cookie := http.Cookie{}
+	cookie.Name = name
+	cookie.Value = value
+	http.SetCookie(w, &cookie)
 }
