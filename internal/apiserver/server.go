@@ -90,6 +90,11 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 			return
 		}
 
+		cookie := http.Cookie{}
+		cookie.Name = "refreshToken"
+		cookie.Value = tokens.RefreshToken
+		http.SetCookie(w, &cookie)
+
 		s.respond(w, r, http.StatusOK, tokens)
 	}
 
