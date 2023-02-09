@@ -8,6 +8,7 @@ import (
 type Store struct {
 	db      *sql.DB
 	userRep *UserRepository
+	callRep *CallRepository
 }
 
 // New ...
@@ -28,4 +29,16 @@ func (s *Store) User() store.UserRepository {
 	}
 
 	return s.userRep
+}
+
+func (s *Store) Call() store.CallRepository {
+	if s.callRep != nil {
+		return s.callRep
+	}
+
+	s.callRep = &CallRepository{
+		store: s,
+	}
+
+	return s.callRep
 }

@@ -8,6 +8,8 @@ type Config struct {
 	Secret          string `toml:"secret"`
 	AccessTokenTTL  string `toml:"accessTokenTTL"`
 	RefreshTokenTTL string `toml:"refreshTokenTTL"`
+	Mode            string `toml:"mode"`
+	SMSRUID         string `toml:"smsru_id"`
 }
 
 // Конструктор конфигурации, присвоение дефолнтных значений

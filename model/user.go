@@ -10,6 +10,7 @@ type User struct {
 	ID                int    `json:"id"`
 	Login             string `json:"login"`
 	Email             string `json:"email"`
+	Phone             string `json:"phone"`
 	Password          string `json:"password,omitempty"`
 	EncryptedPassword string `json:"-"`
 }

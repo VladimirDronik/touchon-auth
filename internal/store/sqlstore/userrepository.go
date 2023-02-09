@@ -10,65 +10,98 @@ type UserRepository struct {
 	store *Store
 }
 
-func (r *UserRepository) Create(user *model.User) error {
+func (r *UserRepository) Create(user *model.User) (*model.User, error) {
 
-	cntLogin, cntEmail, err := r.getCountByLoginOrEmail(user.Login, user.Email)
+	cntLogin, cntEmail, cntPhone, err := r.getCountByLoginOrEmail(user.Login, user.Email, user.Phone)
 
 	if cntLogin > 0 {
 		err = errors.New("login already exists")
-		return err
+		return nil, err
 	}
 
 	if cntEmail > 0 {
 		err = errors.New("email already exists")
-		return err
+		return nil, err
+	}
+
+	if cntPhone > 0 {
+		err = errors.New("phone already exists")
+		return nil, err
 	}
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if err := user.BeforeCreate(); err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := r.store.db.QueryRow("INSERT INTO users (login, email, encrypted_password) VALUES (?, ?, ?)", user.Login, user.Email, user.EncryptedPassword).Err(); err != nil {
-		return err
+	if err := r.store.db.QueryRow("INSERT INTO users (login, email, phone, encrypted_password) VALUES (?, ?, ?, ?)",
+		user.Login, user.Email, user.Phone, user.EncryptedPassword).Err(); err != nil {
+		return nil, err
 	}
 
 	if err := r.store.db.QueryRow(
-		"SELECT id FROM users WHERE login = ? AND email = ?", user.Login, user.Email).Scan(
+		"SELECT id FROM users WHERE phone = ?", user.Phone).Scan(
 		&user.ID,
 	); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return user, nil
 }
 
 // Находим количество пользователей с указанным именем и емейлом, это количесвто будет определять есть ли в системе
 // пользователь и выдавать ощибку, если пытаемся создать с уже имеющимися данными
-func (r *UserRepository) getCountByLoginOrEmail(login string, email string) (int, int, error) {
+func (r *UserRepository) getCountByLoginOrEmail(login string, email string, phone string) (int, int, int, error) {
 	cntLogin := 0
 	cntEmail := 0
+	cntPhone := 0
 
 	if err := r.store.db.QueryRow(
-		"SELECT COUNT(id) AS cnt FROM users WHERE login = ?",
-		login).Scan(
-		&cntLogin,
+		"SELECT COUNT(id) AS cnt FROM users WHERE phone = ?",
+		phone).Scan(
+		&cntPhone,
 	); err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
+
+	if login != "" {
+		if err := r.store.db.QueryRow(
+			"SELECT COUNT(id) AS cnt FROM users WHERE login = ?",
+			login).Scan(
+			&cntLogin,
+		); err != nil {
+			return 0, 0, 0, err
+		}
+	}
+
+	if email != "" {
+		if err := r.store.db.QueryRow(
+			"SELECT COUNT(id) AS cnt FROM users WHERE email = ?",
+			email).Scan(
+			&cntEmail,
+		); err != nil {
+			return 0, 0, 0, err
+		}
+	}
+
+	return cntLogin, cntEmail, cntPhone, nil
+}
+
+func (r *UserRepository) GetCountByPhone(phone string) (int, error) {
+	cntPhone := 0
 
 	if err := r.store.db.QueryRow(
-		"SELECT COUNT(id) AS cnt FROM users WHERE email = ?",
-		email).Scan(
-		&cntEmail,
+		"SELECT COUNT(id) AS cnt FROM users WHERE phone = ?",
+		phone).Scan(
+		&cntPhone,
 	); err != nil {
-		return 0, 0, err
+		return 0, err
 	}
 
-	return cntLogin, cntEmail, nil
+	return cntPhone, nil
 }
 
 func (r *UserRepository) GetUserByLoginOrEmail(login string, email string) (*model.User, error) {
@@ -99,13 +132,27 @@ func (r *UserRepository) AddRefreshToken(userId int, refreshToken string, Refres
 }
 
 // Получаем юзера по его токену, одновременно проверяя не истек ли он
-func (r *UserRepository) GetUserByToken(token string) (*model.User, error) {
+func (r *UserRepository) GetByToken(token string) (*model.User, error) {
 
 	user := &model.User{}
 	if err := r.store.db.QueryRow(
 		"SELECT id FROM users WHERE refresh_token = ? AND token_expired > ?",
 		token, time.Now()).Scan(
 		&user.ID,
+	); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (r *UserRepository) GetByPhone(phone string) (*model.User, error) {
+	user := &model.User{}
+	if err := r.store.db.QueryRow(
+		"SELECT id, phone FROM users WHERE phone = ?",
+		phone).Scan(
+		&user.ID,
+		&user.Phone,
 	); err != nil {
 		return nil, err
 	}
