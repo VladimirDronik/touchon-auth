@@ -20,6 +20,7 @@ var (
 	errIncorrectLoginOrPassword = errors.New("Incorrect login or password")
 	errRefreshTokenInvalid      = errors.New("refresh token invalid")
 	errIncorrectCode            = errors.New("Incorrect code")
+	errIncorrectSecret          = errors.New("Incorrect secret")
 )
 
 type server struct {
@@ -51,14 +52,14 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *server) configeureRouter() {
 	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
-	s.router.HandleFunc("/users/refresh_token", s.handleRefreshToken()).Methods("POST")
+	s.router.HandleFunc("/auth/refresh_token", s.handleRefreshToken()).Methods("POST")
 
 	if s.config.Mode == "login" {
 		s.router.HandleFunc("/users/create", s.handleUsersCreate()).Methods("POST")
 		s.router.HandleFunc("/login", s.handleSessionsCreate()).Methods("POST")
 	} else if s.config.Mode == "call" {
-		s.router.HandleFunc("/users/call", s.handleUserCall()).Methods("POST")
-		s.router.HandleFunc("/users/sms", s.handleUserSMS()).Methods("POST")
+		s.router.HandleFunc("/auth/call", s.handleUserCall()).Methods("POST")
+		s.router.HandleFunc("/auth/sms", s.handleUserSMS()).Methods("POST")
 		s.router.HandleFunc("/login", s.handleUserLoginByCode()).Methods("POST")
 	}
 
@@ -113,7 +114,8 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 func (s *server) handleUserCall() http.HandlerFunc {
 
 	type request struct {
-		Phone string `json:"phone"`
+		Phone  string `json:"phone"`
+		Secret string `json:"secret"`
 	}
 
 	type response struct {
@@ -143,11 +145,19 @@ func (s *server) handleUserCall() http.HandlerFunc {
 			return
 		}
 
-		params := url.Values{}
-		params.Add("phone", req.Phone)
-		params.Add("api_id", s.config.SMSRUID)
+		//Если пришел неправильный серкетный ключ
+		if req.Secret != s.config.SecretAPIKey {
+			s.error(w, r, http.StatusBadRequest, errIncorrectSecret)
+			return
+		}
 
-		resp, err := http.Get("https://sms.ru/code/call?" + params.Encode())
+		u := &url.URL{Scheme: "https",
+			Host:     "sms.ru",
+			Path:     "code/call",
+			RawQuery: "api_id=" + s.config.SMSRUID + "&phone=" + req.Phone}
+
+		resp, err := http.Get(u.String())
+		
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -182,7 +192,7 @@ func (s *server) handleUserCall() http.HandlerFunc {
 		//добавить данные в таблицу временных кодов
 		//code, err := strconv.Atoi(req.Code)
 		if err != nil {
-			s.error(w, r, http.StatusInternalServerError, err)
+			s.error(w, r, http.StatusUnprocessableEntity, err)
 			return
 		}
 		s.store.Call().AddTempCallData(respStruct.ID, req.Phone, respStruct.Code)
@@ -197,7 +207,8 @@ func (s *server) handleUserCall() http.HandlerFunc {
 func (s *server) handleUserSMS() http.HandlerFunc {
 
 	type request struct {
-		Phone string `json:"phone"`
+		Phone  string `json:"phone"`
+		Secret string `json:"secret"`
 	}
 
 	type response struct {
@@ -211,6 +222,12 @@ func (s *server) handleUserSMS() http.HandlerFunc {
 
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
+			return
+		}
+
+		//Если пришел неправильный серкетный ключ
+		if req.Secret != s.config.SecretAPIKey {
+			s.error(w, r, http.StatusInternalServerError, errIncorrectSecret)
 			return
 		}
 

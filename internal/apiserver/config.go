@@ -10,6 +10,7 @@ type Config struct {
 	RefreshTokenTTL string `toml:"refreshTokenTTL"`
 	Mode            string `toml:"mode"`
 	SMSRUID         string `toml:"smsru_id"`
+	SecretAPIKey    string `toml:"secret_api_key"`
 }
 
 // Конструктор конфигурации, присвоение дефолнтных значений

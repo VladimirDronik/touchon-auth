@@ -3,12 +3,13 @@ bind_addr = ":8090"
 log_level = "debug" #debug or prodaction
 mode = "call" #call or login
 smsru_id = "00b463d9-2c55-5ca4-393c-bfe17d502349"
+secret_api_key = "610a2ee688cda9e724885e23cd2cfdee"
 
 #database
 database_url = "root:Alli80ed!@tcp(127.0.0.1:3306)/touchon_users"
 
 #token
 secret = "Alli80ed!"
-accessTokenTTL = "15m"
+accessTokenTTL = "30m"
 refreshTokenTTl = "43200m"
 
