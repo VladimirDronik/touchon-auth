@@ -119,15 +119,16 @@ func (r *UserRepository) GetUserByLoginOrEmail(login string, email string) (*mod
 	return user, nil
 }
 
-//Сохраняем RefreshToken в БД для указанного юзера и задаем ему срок службы
+// Сохраняем RefreshToken в БД для указанного юзера и задаем ему срок службы
 func (r *UserRepository) AddRefreshToken(userId int, refreshToken string, RefreshTokenTTL time.Duration) error {
 
 	ttl := time.Now().Add(RefreshTokenTTL)
 
-	if err := r.store.db.QueryRow("UPDATE users SET refresh_token = ?, token_expired = ? WHERE id = ?",
+	if err := r.store.db.QueryRow("REPLACE INTO tokens (refresh_token, token_expired, id_user) VALUES (?,?,?)",
 		refreshToken, ttl, userId).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -136,7 +137,7 @@ func (r *UserRepository) GetByToken(token string) (*model.User, error) {
 
 	user := &model.User{}
 	if err := r.store.db.QueryRow(
-		"SELECT id FROM users WHERE refresh_token = ? AND token_expired > ?",
+		"SELECT id_user FROM tokens WHERE refresh_token = ? AND token_expired > ?",
 		token, time.Now()).Scan(
 		&user.ID,
 	); err != nil {
@@ -158,4 +159,15 @@ func (r *UserRepository) GetByPhone(phone string) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+// Удаление данных о сессии в таблице токенов
+func (r *UserRepository) RemoveToken(refreshToken string) error {
+
+	if err := r.store.db.QueryRow("DELETE FROM tokens WHERE refresh_token=?",
+		refreshToken).Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -76,7 +76,7 @@ func (s *server) confirureLogger(loglevel string) error {
 	return nil
 }
 
-//Вызывается при логине. Создается пара токенов AccessToken, RefreshToken
+// Вызывается при логине. Создается пара токенов AccessToken, RefreshToken
 func (s *server) handleSessionsCreate() http.HandlerFunc {
 
 	type request struct {
@@ -157,7 +157,7 @@ func (s *server) handleUserCall() http.HandlerFunc {
 			RawQuery: "api_id=" + s.config.SMSRUID + "&phone=" + req.Phone}
 
 		resp, err := http.Get(u.String())
-		
+
 		if err != nil {
 			s.error(w, r, http.StatusInternalServerError, err)
 			return
@@ -294,7 +294,7 @@ func (s *server) handleUserLoginByCode() http.HandlerFunc {
 
 		cnt, err := s.store.Call().GetRowByCodeANDPhone(req.Phone, req.Code)
 		if cnt == 0 || err != nil {
-			s.error(w, r, http.StatusUnauthorized, errIncorrectCode)
+			s.error(w, r, http.StatusBadRequest, errIncorrectCode)
 			return
 		}
 
@@ -325,7 +325,7 @@ func (s *server) handleUserLoginByCode() http.HandlerFunc {
 	}
 }
 
-//Вызывается при создании пользователя при аутентификации по логину и паролю
+// Вызывается при создании пользователя при аутентификации по логину и паролю
 func (s *server) handleUsersCreate() http.HandlerFunc {
 	type request struct {
 		ID       int    `json:"id"`
@@ -350,7 +350,7 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 
 		user, err := s.store.User().Create(user)
 		if err != nil {
-			s.error(w, r, http.StatusUnprocessableEntity, err)
+			s.error(w, r, http.StatusInternalServerError, err)
 		}
 
 		user.Sanitize()
@@ -402,15 +402,17 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 
 		user, err := s.store.User().GetByToken(req.RefreshToken)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, errRefreshTokenInvalid)
+			s.error(w, r, http.StatusUnauthorized, nil)
 			return
 		}
 
 		tokens, err := s.createSession(user.ID)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusInternalServerError, err)
 			return
 		}
+
+		s.store.User().RemoveToken(req.RefreshToken)
 
 		s.setCookie(w, "refreshToken", tokens.RefreshToken)
 		s.respond(w, r, http.StatusOK, tokens)
@@ -418,7 +420,12 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
-	s.respond(w, r, code, map[string]string{"error": err.Error()})
+	if err != nil {
+		s.respond(w, r, code, map[string]string{"message": err.Error()})
+	} else {
+		s.respond(w, r, code, nil)
+	}
+
 }
 
 func (s *server) respond(w http.ResponseWriter, r *http.Request, code int, data interface{}) {

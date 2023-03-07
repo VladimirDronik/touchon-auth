@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
+	"time"
 	"touchon_auth/internal/store/sqlstore"
 )
 
@@ -26,6 +27,11 @@ func newDB(dbURL string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	db.SetConnMaxLifetime(time.Second * 5)
+	db.SetConnMaxIdleTime(time.Second * 15)
+	db.SetMaxOpenConns(100)
+	db.SetMaxIdleConns(50)
 
 	if err := db.Ping(); err != nil {
 		return nil, err

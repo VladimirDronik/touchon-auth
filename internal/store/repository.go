@@ -12,6 +12,7 @@ type UserRepository interface {
 	GetByToken(string) (*model.User, error)
 	GetByPhone(string) (*model.User, error)
 	GetCountByPhone(phone string) (int, error)
+	RemoveToken(refreshToken string) error
 }
 
 type CallRepository interface {

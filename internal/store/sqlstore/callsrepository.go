@@ -10,7 +10,7 @@ type CallRepository struct {
 }
 
 // RemoveOldData Удаляет все ранее внесенные записи с номером, если они есть,
-//также очищает от данных, которые больше часа лежат в БД
+// также очищает от данных, которые больше часа лежат в БД
 func (c *CallRepository) RemoveOldData(phone string) error {
 
 	if err := c.store.db.QueryRow(
@@ -18,6 +18,7 @@ func (c *CallRepository) RemoveOldData(phone string) error {
 		phone, time.Now().Add(-10*time.Minute)).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -29,6 +30,7 @@ func (c *CallRepository) AddTempCallData(id string, phone string, code int) erro
 		id, phone, code, time.Now()).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -40,6 +42,7 @@ func (c *CallRepository) AddCallData(call *model.Call) error {
 		call.ID, call.Phone, call.Cost, call.Balance).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -51,6 +54,7 @@ func (c *CallRepository) AddSMSData(sms *model.SMS) error {
 		sms.Phone, sms.Balance).Err(); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -79,6 +83,6 @@ func (c *CallRepository) GetCodeByPhone(phone string) (int, error) {
 	); err != nil {
 		return 0, err
 	}
-
+	
 	return code, nil
 }
