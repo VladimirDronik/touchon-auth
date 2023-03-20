@@ -83,6 +83,6 @@ func (c *CallRepository) GetCodeByPhone(phone string) (int, error) {
 	); err != nil {
 		return 0, err
 	}
-	
+
 	return code, nil
 }

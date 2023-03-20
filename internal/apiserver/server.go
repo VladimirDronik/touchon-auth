@@ -51,6 +51,7 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) configeureRouter() {
+
 	s.router.Use(handlers.CORS(handlers.AllowedOrigins([]string{"*"})))
 	s.router.HandleFunc("/auth/refresh_token", s.handleRefreshToken()).Methods("POST")
 
@@ -107,8 +108,8 @@ func (s *server) handleSessionsCreate() http.HandlerFunc {
 
 		s.setCookie(w, "refreshToken", tokens.RefreshToken)
 		s.respond(w, r, http.StatusOK, tokens)
+		return
 	}
-
 }
 
 func (s *server) handleUserCall() http.HandlerFunc {
@@ -200,6 +201,7 @@ func (s *server) handleUserCall() http.HandlerFunc {
 		//добавить данные в таблицу звонков
 		s.store.Call().AddCallData(call)
 		s.respond(w, r, http.StatusCreated, respStruct.ID)
+		return
 	}
 }
 
@@ -271,6 +273,7 @@ func (s *server) handleUserSMS() http.HandlerFunc {
 		//добавить данные в таблицу звонков
 		s.store.Call().AddSMSData(sms)
 		s.respond(w, r, http.StatusCreated, req.Phone)
+		return
 	}
 }
 
@@ -286,19 +289,22 @@ func (s *server) handleUserLoginByCode() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		req := &request{}
-
+		s.logger.Info("1 REQUEST") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
+		s.logger.Info("1.1 DECODE_REQUEST") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		cnt, err := s.store.Call().GetRowByCodeANDPhone(req.Phone, req.Code)
 		if cnt == 0 || err != nil {
 			s.error(w, r, http.StatusBadRequest, errIncorrectCode)
 			return
 		}
+		s.logger.Info("2 GET_BY_CODE") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		user, err := s.store.User().GetByPhone(req.Phone)
+		s.logger.Info("3 GET_USER") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//Если не нашли пользователя, то создаем нового, если нашли, то логинимся
 		if user == nil {
 			user = &model.User{
@@ -306,6 +312,7 @@ func (s *server) handleUserLoginByCode() http.HandlerFunc {
 			}
 
 			user, err = s.store.User().Create(user)
+			s.logger.Info("3.1 CREATE_USER") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if err != nil {
 				s.error(w, r, http.StatusUnprocessableEntity, err)
 				return
@@ -313,15 +320,19 @@ func (s *server) handleUserLoginByCode() http.HandlerFunc {
 		}
 
 		tokens, err := s.createSession(user.ID)
+		s.logger.Info("4 CREATE_SESSION") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		if err != nil {
 			s.error(w, r, http.StatusBadRequest, err)
 			return
 		}
 
 		s.store.Call().RemoveOldData(user.Phone)
+		s.logger.Info("5 REMOVE_OLD_DATA") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		s.setCookie(w, "refreshToken", tokens.RefreshToken)
+		s.logger.Info("6 SET_COOKIE") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		s.respond(w, r, http.StatusOK, tokens)
-
+		s.logger.Info("7 RESPOND") /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		return
 	}
 }
 
@@ -355,6 +366,7 @@ func (s *server) handleUsersCreate() http.HandlerFunc {
 
 		user.Sanitize()
 		s.respond(w, r, http.StatusCreated, user)
+		return
 	}
 }
 
@@ -416,12 +428,14 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 
 		s.setCookie(w, "refreshToken", tokens.RefreshToken)
 		s.respond(w, r, http.StatusOK, tokens)
+		return
 	}
 }
 
 func (s *server) error(w http.ResponseWriter, r *http.Request, code int, err error) {
 	if err != nil {
 		s.respond(w, r, code, map[string]string{"message": err.Error()})
+		s.logger.Error(err.Error())
 	} else {
 		s.respond(w, r, code, nil)
 	}
