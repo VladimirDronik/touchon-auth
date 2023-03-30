@@ -10,7 +10,7 @@ import (
 
 // Запуск сервера
 func Start(config *Config) error {
-	db, err := newDB(config.DatabaseURL)
+	db, err := newDB(config)
 	if err != nil {
 		return err
 	}
@@ -22,16 +22,16 @@ func Start(config *Config) error {
 	return http.ListenAndServe(config.BindAddr, s)
 }
 
-func newDB(dbURL string) (*sql.DB, error) {
-	db, err := sql.Open("mysql", dbURL)
+func newDB(config *Config) (*sql.DB, error) {
+	db, err := sql.Open("mysql", config.DatabaseURL)
 	if err != nil {
 		return nil, err
 	}
 
-	db.SetConnMaxLifetime(time.Second * 5)
-	db.SetConnMaxIdleTime(time.Second * 15)
-	db.SetMaxOpenConns(100)
-	db.SetMaxIdleConns(50)
+	db.SetConnMaxLifetime(time.Second * config.MaxLifetime)
+	db.SetConnMaxIdleTime(time.Second * config.MaxIDLETime)
+	db.SetMaxOpenConns(config.MaxOpenConns)
+	db.SetMaxIdleConns(config.MaxIDLEConns)
 
 	if err := db.Ping(); err != nil {
 		return nil, err

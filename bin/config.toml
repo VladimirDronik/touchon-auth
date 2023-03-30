@@ -7,6 +7,10 @@ secret_api_key = "610a2ee688cda9e724885e23cd2cfdee"
 
 #database
 database_url = "root:Alli80ed!@tcp(127.0.0.1:3306)/touchon_users"
+max_lifetime = 5
+max_idle_time = 15
+max_open_conns = 100
+max_idle_conns = 50
 
 #token
 secret = "Alli80ed!"

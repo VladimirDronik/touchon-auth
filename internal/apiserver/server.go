@@ -192,10 +192,10 @@ func (s *server) handleUserCall() http.HandlerFunc {
 
 		//добавить данные в таблицу временных кодов
 		//code, err := strconv.Atoi(req.Code)
-		if err != nil {
-			s.error(w, r, http.StatusUnprocessableEntity, err)
-			return
-		}
+		//if err != nil {
+		//	s.error(w, r, http.StatusUnprocessableEntity, err)
+		//	return
+		//}
 		s.store.Call().AddTempCallData(respStruct.ID, req.Phone, respStruct.Code)
 
 		//добавить данные в таблицу звонков

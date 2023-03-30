@@ -37,8 +37,9 @@ func (r *UserRepository) Create(user *model.User) (*model.User, error) {
 		return nil, err
 	}
 
-	if err := r.store.db.QueryRow("INSERT INTO users (login, email, phone, encrypted_password) VALUES (?, ?, ?, ?)",
-		user.Login, user.Email, user.Phone, user.EncryptedPassword).Err(); err != nil {
+	_, err = r.store.db.Exec("INSERT INTO users (login, email, phone, encrypted_password) VALUES (?, ?, ?, ?)",
+		user.Login, user.Email, user.Phone, user.EncryptedPassword)
+	if err != nil {
 		return nil, err
 	}
 
@@ -124,8 +125,9 @@ func (r *UserRepository) AddRefreshToken(userId int, refreshToken string, Refres
 
 	ttl := time.Now().Add(RefreshTokenTTL)
 
-	if err := r.store.db.QueryRow("REPLACE INTO tokens (refresh_token, token_expired, id_user) VALUES (?,?,?)",
-		refreshToken, ttl, userId).Err(); err != nil {
+	_, err := r.store.db.Exec("REPLACE INTO tokens (refresh_token, token_expired, id_user) VALUES (?,?,?)",
+		refreshToken, ttl, userId)
+	if err != nil {
 		return err
 	}
 
@@ -138,9 +140,7 @@ func (r *UserRepository) GetByToken(token string) (*model.User, error) {
 	user := &model.User{}
 	if err := r.store.db.QueryRow(
 		"SELECT id_user FROM tokens WHERE refresh_token = ? AND token_expired > ?",
-		token, time.Now()).Scan(
-		&user.ID,
-	); err != nil {
+		token, time.Now()).Scan(&user.ID); err != nil {
 		return nil, err
 	}
 
@@ -153,8 +153,7 @@ func (r *UserRepository) GetByPhone(phone string) (*model.User, error) {
 		"SELECT id, phone FROM users WHERE phone = ?",
 		phone).Scan(
 		&user.ID,
-		&user.Phone,
-	); err != nil {
+		&user.Phone); err != nil {
 		return nil, err
 	}
 
@@ -164,8 +163,9 @@ func (r *UserRepository) GetByPhone(phone string) (*model.User, error) {
 // Удаление данных о сессии в таблице токенов
 func (r *UserRepository) RemoveToken(refreshToken string) error {
 
-	if err := r.store.db.QueryRow("DELETE FROM tokens WHERE refresh_token=?",
-		refreshToken).Err(); err != nil {
+	_, err := r.store.db.Exec("DELETE FROM tokens WHERE refresh_token=?",
+		refreshToken)
+	if err != nil {
 		return err
 	}
 

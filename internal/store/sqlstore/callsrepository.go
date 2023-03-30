@@ -13,9 +13,10 @@ type CallRepository struct {
 // также очищает от данных, которые больше часа лежат в БД
 func (c *CallRepository) RemoveOldData(phone string) error {
 
-	if err := c.store.db.QueryRow(
+	_, err := c.store.db.Exec(
 		"DELETE FROM calls_codes WHERE phone = ? OR `datetime` <= ?",
-		phone, time.Now().Add(-10*time.Minute)).Err(); err != nil {
+		phone, time.Now().Add(-10*time.Minute))
+	if err != nil {
 		return err
 	}
 
@@ -25,9 +26,10 @@ func (c *CallRepository) RemoveOldData(phone string) error {
 // AddTempCallData Добавляет данные о звонке в таблицу для временного хранения
 func (c *CallRepository) AddTempCallData(id string, phone string, code int) error {
 
-	if err := c.store.db.QueryRow(
+	_, err := c.store.db.Exec(
 		"INSERT INTO calls_codes (id, phone, code, datetime) VALUES (?, ?, ?, ?) ",
-		id, phone, code, time.Now()).Err(); err != nil {
+		id, phone, code, time.Now())
+	if err != nil {
 		return err
 	}
 
@@ -37,9 +39,10 @@ func (c *CallRepository) AddTempCallData(id string, phone string, code int) erro
 // AddCallData Добавляет данные о звонке в таблицу для хранения
 func (c *CallRepository) AddCallData(call *model.Call) error {
 
-	if err := c.store.db.QueryRow(
+	_, err := c.store.db.Exec(
 		"INSERT INTO calls (id, phone, cost, balance, type, datetime) VALUES (?, ?, ?, ?, 'call', NOW()) ",
-		call.ID, call.Phone, call.Cost, call.Balance).Err(); err != nil {
+		call.ID, call.Phone, call.Cost, call.Balance)
+	if err != nil {
 		return err
 	}
 
@@ -49,9 +52,10 @@ func (c *CallRepository) AddCallData(call *model.Call) error {
 // AddSMSData Добавляет данные о sms в таблицу для хранения
 func (c *CallRepository) AddSMSData(sms *model.SMS) error {
 
-	if err := c.store.db.QueryRow(
+	_, err := c.store.db.Exec(
 		"INSERT INTO calls (id, phone, balance, type, datetime) VALUES (,?, ?, 'sms', NOW()) ",
-		sms.Phone, sms.Balance).Err(); err != nil {
+		sms.Phone, sms.Balance)
+	if err != nil {
 		return err
 	}
 
