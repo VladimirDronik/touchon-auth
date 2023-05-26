@@ -5,15 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f8a434b1-9d09-44e9-913c-49b2fec04a4f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/config.toml" beforeDir="false" afterPath="$PROJECT_DIR$/bin/config.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/touchon_auth" beforeDir="false" afterPath="$PROJECT_DIR$/bin/touchon_auth" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/apiserver/apiserver.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/apiserver.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/apiserver/config.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/config.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/apiserver/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/apiserver/server.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/store/sqlstore/callsrepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/store/sqlstore/callsrepository.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/internal/store/sqlstore/userrepository.go" beforeDir="false" afterPath="$PROJECT_DIR$/internal/store/sqlstore/userrepository.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

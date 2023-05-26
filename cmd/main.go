@@ -13,7 +13,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPath, "configs-path", "config.toml", "path to configs file")
+	flag.StringVar(&configPath, "config", "", "path to configs file")
 }
 
 var Version string
@@ -27,7 +27,7 @@ func main() {
 	_, err := toml.DecodeFile(configPath, config)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 
 	if err := apiserver.Start(config); err != nil {

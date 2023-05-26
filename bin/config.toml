@@ -1,19 +1,19 @@
 #general
-bind_addr = ":8090"
-log_level = "debug" #debug or prodaction
-mode = "call" #call or login
-smsru_id = "00b463d9-2c55-5ca4-393c-bfe17d502349"
-secret_api_key = "610a2ee688cda9e724885e23cd2cfdee"
+BIND_ADDR = ":8090"
+LOG_LEVEL = "debug" #debug or prodaction
+MODE = "call" #call or login
+SMSRU_ID = "00b463d9-2c55-5ca4-393c-bfe17d502349"
+SECRET_API_KEY = "610a2ee688cda9e724885e23cd2cfdee"
 
 #database
-database_url = "root:Alli80ed!@tcp(127.0.0.1:3306)/touchon_users"
-max_lifetime = 5
-max_idle_time = 15
-max_open_conns = 100
-max_idle_conns = 50
+DATABASE_URL = "root:Alli80ed!@tcp(127.0.0.1:3306)/touchon_users"
+MAX_LIFETIME = 5
+MAX_IDLE_TIME = 15
+MAX_OPEN_CONNS = 100
+MAX_IDLE_CONNS = 50
 
 #token
-secret = "Alli80ed!"
-accessTokenTTL = "30m"
-refreshTokenTTl = "43200m"
+SECRET = "Alli80ed!"
+ACCESS_TOKEN_TTL = "30m"
+REFRESH_TOKEN_TTL = "43200m"
 
