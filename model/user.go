@@ -33,7 +33,7 @@ func (user *User) Validate() error {
 }
 
 // Выполняем перед созданием пользователя
-func (user *User) BeforeCreate() error {
+func (user *User) EncryptPassword() error {
 	if len(user.Password) > 0 {
 		enc, err := encryptString(user.Password)
 		if err != nil {
@@ -46,7 +46,7 @@ func (user *User) BeforeCreate() error {
 	return nil
 }
 
-//Шифрование пароля
+// Шифрование пароля
 func encryptString(s string) (string, error) {
 	b, err := bcrypt.GenerateFromPassword([]byte(s), bcrypt.MinCost)
 	if err != nil {
