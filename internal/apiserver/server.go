@@ -98,7 +98,7 @@ func (s *server) confirureLogger(loglevel string) error {
 func (s *server) autenеificateUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Header["Token"] == nil {
-			s.error(w, r, http.StatusBadRequest, errTokenNotFind)
+			s.error(w, r, http.StatusForbidden, errTokenNotFind)
 			return
 		}
 
@@ -106,7 +106,7 @@ func (s *server) autenеificateUser(next http.Handler) http.Handler {
 		//Проверяем не протух ли токен и извлекаем ID юзера
 		s.userID, err = JWTToken.KeysExtract(r.Header["Token"][0], s.config.Secret)
 		if err != nil {
-			s.error(w, r, http.StatusBadRequest, err)
+			s.error(w, r, http.StatusForbidden, err)
 		}
 
 		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), ctxKeyAllow, true)))
@@ -520,7 +520,7 @@ func (s *server) handleRefreshToken() http.HandlerFunc {
 
 		user, err := s.store.User().GetByToken(req.RefreshToken)
 		if err != nil {
-			s.error(w, r, http.StatusUnauthorized, errRefreshTokenInvalid)
+			s.error(w, r, http.StatusForbidden, errRefreshTokenInvalid)
 			return
 		}
 
